@@ -1,8 +1,9 @@
 #include <pthread.h>
 #include <stdbool.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "raw_data.h"
+#include "../include/raw_data.h"
 
 #define MAX_BUFFER_SIZE 7
 
@@ -26,7 +27,7 @@ Raw_data* raw_data_create(void);
 void raw_data_destroy(Raw_data* raw_data);
 bool raw_data_full(const Raw_data* raw_data);
 bool raw_data_empty(const Raw_data* raw_data);
-void raw_data_add(Raw_data* raw_data, char data[], size_t data_size);
+void raw_data_add(Raw_data* raw_data, char data[]);
 char* raw_data_get(Raw_data* raw_data);
 void raw_data_lock(Raw_data* raw_data);
 void raw_data_unlock(Raw_data* raw_data);
@@ -86,11 +87,15 @@ bool raw_data_empty(const Raw_data* raw_data){
     return raw_data->current_size == 0;
 }
 
-void raw_data_add(Raw_data* raw_data, char data[], size_t data_size){
+void raw_data_add(Raw_data* raw_data, char data[]){
+    if(data == NULL){
+        return;
+    }
+
     if(raw_data_full(raw_data)){
         return;
     }
-    
+    size_t data_size = strlen(data) + 1;
     Raw_data_element* new_element = malloc(sizeof(*new_element) + data_size * sizeof(char));
     if(new_element == NULL){
         return;
@@ -130,6 +135,7 @@ char* raw_data_get(Raw_data* raw_data){
         raw_data->head = NULL;
     }
     free(old_element);
+    raw_data->current_size--;
 
     return data;
 }

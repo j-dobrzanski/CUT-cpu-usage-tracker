@@ -1,1 +1,1 @@
-void* analyzer(void* arg);
+void* reader(void* arg);

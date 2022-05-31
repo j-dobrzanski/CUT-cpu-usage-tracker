@@ -1,5 +1,6 @@
 #include "../include/raw_data.h"
 #include <assert.h>
+#include <stdlib.h>
 #include <string.h>
 
 static void raw_data_test_create(){
@@ -77,6 +78,7 @@ static void raw_data_test_fill_and_empty(){
     while(raw_data_empty(raw_data) == false){
         char* got_payload = raw_data_get(raw_data);
         assert(memcmp(payload, got_payload, data_size) == 0);
+        free(got_payload);
     }
     assert(raw_data_empty(raw_data) == true);
     assert(raw_data_full(raw_data) == false);

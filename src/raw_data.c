@@ -17,7 +17,7 @@
 */
 
 /* After coding thought: maybe consdier changing linked-list later to Raw_data_element* list[MAX_BUFFER_SIZE] 
-    that will store pointers to data frames,
+    that will store pointers to Raw_data_elements,
     problems: still need something like head/tail or many operations on this list to manage it
     adventages: easier destroying, *easier* data structure
 */
@@ -127,7 +127,7 @@ void raw_data_add(Raw_data* raw_data, char data[]){
     if(new_element == NULL){
         return;
     }
-    
+
     new_element->next_element = NULL;
     new_element->data_size = data_size;
     memcpy(new_element->payload, data, data_size);

@@ -8,7 +8,7 @@ void* printer(void* arg);
 static void print_data(double* data){
     size_t counter = 0;
     printf("\n");
-    while(data[counter] != -1){
+    while(data[counter] > 0){
         printf("Cpu%.0f: %.2f\n", data[counter], data[counter + 1]);
         counter += 2;
     }

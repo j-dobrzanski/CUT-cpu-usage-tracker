@@ -65,7 +65,7 @@ static size_t** parse_and_analyze_data(char* data, size_t* const cpu_number){
         /* Parsing first field: cpu / cpu0 - if it is cpu0 then it is normal conversion, 
             otherwise there is nothing to convert so 0 is returned anyways - as specified in documentation 
         */
-        fields[0] = strtoimax(token, &endptr, 10);
+        fields[0] = strtoumax(token, &endptr, 10);
         if(errno != 0){
             return NULL;
         }
@@ -76,7 +76,7 @@ static size_t** parse_and_analyze_data(char* data, size_t* const cpu_number){
                 return NULL;
             }
             
-            fields[i] = strtoimax(temp_tok, &endptr, 10);
+            fields[i] = strtoumax(temp_tok, &endptr, 10);
             if(errno != 0){
                 return NULL;
             }
@@ -92,7 +92,7 @@ static size_t** parse_and_analyze_data(char* data, size_t* const cpu_number){
             memcpy(temp_parsed_data, parsed_data, sizeof(*parsed_data)*buffer_number * BUFFER_SIZE);
             free(parsed_data);
             buffer_number++;
-            size_t** parsed_data = malloc(sizeof(*parsed_data) * buffer_number * BUFFER_SIZE);
+            parsed_data = malloc(sizeof(*parsed_data) * buffer_number * BUFFER_SIZE);
             memcpy(parsed_data, temp_parsed_data, sizeof(*parsed_data) * (buffer_number - 1) * BUFFER_SIZE);
             free(temp_parsed_data);
             parsed_data[*cpu_number] = data_calc;
@@ -114,7 +114,7 @@ static double* calculate_percentage(size_t*const*const old_data, size_t*const*co
     else{
         max_cpu_number = new_cpu_number;
     }
-    percentage_list = malloc(sizeof(*percentage_list)*(2*max_cpu_number+1)); /* We need space for max_cpu_number pairs N:% and -1 terminating whole list */
+    percentage_list = malloc(sizeof(*percentage_list)*2*max_cpu_number);
     if(percentage_list == NULL){
         return NULL;
     }
@@ -126,10 +126,10 @@ static double* calculate_percentage(size_t*const*const old_data, size_t*const*co
         if(old_data[old_cpu_counter][0] == new_data[new_cpu_counter][0]){
             const size_t* old_list = old_data[old_cpu_counter];
             const size_t* new_list = new_data[new_cpu_counter];
-            percentage_list[2*(*max_cpu)] = old_list[0];
+            percentage_list[2*(*max_cpu)] = (double)old_list[0];
             size_t totald = new_list[2] - old_list[2]; /* Total - PrevTotal */
             size_t idled = new_list[1] - old_list[1]; /* Ile - PrevIdle */
-            double CPU_percentage = (double)(totald - idled)/totald;
+            double CPU_percentage = (double)(totald - idled)/(double)totald;
             percentage_list[2*(*max_cpu) + 1] = CPU_percentage;
             (*max_cpu)++;
             old_cpu_counter++;
@@ -142,7 +142,6 @@ static double* calculate_percentage(size_t*const*const old_data, size_t*const*co
             new_cpu_counter++;
         }
     }
-    percentage_list[2*(*max_cpu+1)] = -1;
 
     return percentage_list;
 }
@@ -229,7 +228,7 @@ void* analyzer(void* arg){
             raw_data_wait_for_producer(raw_data);
         }
 
-        char* data = raw_data_get(raw_data);
+        data = raw_data_get(raw_data);
 
         raw_data_call_producer(raw_data);
 
@@ -237,7 +236,7 @@ void* analyzer(void* arg){
 
         /* Analyzing new data */
         free_data(old_data, old_cpu_number);
-        size_t** old_data = new_data;
+        old_data = new_data;
         old_cpu_number = new_cpu_number;
         new_data = parse_and_analyze_data(data, &new_cpu_number);
         free(data);

@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "../include/raw_data.h"
+#include "../include/data_manager.h"
 
 #define MAX_BUFFER_SIZE 7 /* max number of cpu usage snapshots in buffer */
 

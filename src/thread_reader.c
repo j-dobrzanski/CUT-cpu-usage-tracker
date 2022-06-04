@@ -9,7 +9,6 @@
 
 #define SINLGE_BUFFER_SIZE 16
 
-static char* read_data(FILE* ptr);
 void* reader(void* arg);
 
 /* From documentation of kernel we know that in /proc/stat after info about cpus we get line with info about interrupts
@@ -93,7 +92,6 @@ void* reader(void* arg){
             raw_data_wait_for_consumer(raw_data);
         }
 
-        printf("%s", data);
         raw_data_add(raw_data, data);
 
         raw_data_call_consumer(raw_data);

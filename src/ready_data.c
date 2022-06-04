@@ -5,13 +5,14 @@
 #include <string.h>
 #include <sys/types.h>
 #include "../include/ready_data.h"
+#include "../include/data_manager.h"
 
 #define MAX_BUFFER_SIZE 7 /* max number of print-ready data in buffer */
 
 /* Keeps single list of percentages in order cpu, cpu1, cpu2, ..., up to payload size */
 typedef struct Ready_data_element{
     size_t payload_size;
-    float* payload[]; /* We can use FAM, because we don't know the value of payload_size */
+    double* payload[]; /* We can use FAM, because we don't know the value of payload_size */
 } Ready_data_element;
 
 /* Keeps basic actual info of buffer and manages it and manages thread-needed variables */
@@ -28,8 +29,8 @@ Ready_data* ready_data_create(void);
 void ready_data_destroy(Ready_data* read_data);
 bool ready_data_full(const Ready_data* ready_data);
 bool ready_data_empty(const Ready_data* ready_data);
-void ready_data_add(Ready_data*, float data[], size_t elem_number);
-float* ready_data_get(Ready_data* ready_data);
+void ready_data_add(Ready_data*, double data[], size_t elem_number);
+double* ready_data_get(Ready_data* ready_data);
 void ready_data_lock(Ready_data* ready_data);
 void ready_data_unlock(Ready_data* ready_data);
 void ready_data_call_producer(Ready_data* ready_data);
@@ -83,7 +84,7 @@ bool ready_data_empty(const Ready_data* ready_data){
 /* Adds new element to data buffer - in some way Ready_data_element constructor,
     and updates info in manager.
  */
-void ready_data_add(Ready_data* ready_data, float data[], size_t elem_number){
+void ready_data_add(Ready_data* ready_data, double data[], size_t elem_number){
     if(ready_data == NULL || data == NULL || elem_number <= 0){
         return;
     }
@@ -104,12 +105,12 @@ void ready_data_add(Ready_data* ready_data, float data[], size_t elem_number){
     ready_data->current_size++;
 }
 
-float* ready_data_get(Ready_data* ready_data){
+double* ready_data_get(Ready_data* ready_data){
     if(ready_data_empty(ready_data)){
         return NULL;
     }
     Ready_data_element* element = ready_data->table[0];
-    float* data = malloc(sizeof(*data) * element->payload_size);
+    double* data = malloc(sizeof(*data) * element->payload_size);
     if(data == NULL){
         return NULL;
     }

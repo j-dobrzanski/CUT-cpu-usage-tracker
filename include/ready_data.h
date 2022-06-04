@@ -13,5 +13,5 @@ void ready_data_lock(Ready_data* ready_data);
 void ready_data_unlock(Ready_data* ready_data);
 void ready_data_call_producer(Ready_data* ready_data);
 void ready_data_call_consumer(Ready_data* ready_data);
-void ready_data_wait_for_proucer(Ready_data* ready_data);
+void ready_data_wait_for_producer(Ready_data* ready_data);
 void ready_data_wait_for_consumer(Ready_data* ready_data);

@@ -24,7 +24,7 @@ void* printer(void* arg){
         ready_data_lock(ready_data);
 
         if(ready_data_empty(ready_data)){
-            ready_data_wait_for_proucer(ready_data);
+            ready_data_wait_for_producer(ready_data);
         }
 
         double* printable_data = ready_data_get(ready_data);

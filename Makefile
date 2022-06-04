@@ -1,6 +1,5 @@
 main_file = src/main.c
-src_files = src/raw_data.c src/thread_reader.c
-test_files = test/raw_data_test.c
+src_files = src/raw_data.c src/thread_reader.c src/ready_data.c
 test_outs = $(notdir $(test_files:%=bin/%.o))
 
 

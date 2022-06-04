@@ -114,7 +114,7 @@ static double* calculate_percentage(size_t*const*const old_data, size_t*const*co
     else{
         max_cpu_number = new_cpu_number;
     }
-    percentage_list = malloc(sizeof(*percentage_list)*2*max_cpu_number);
+    percentage_list = malloc(sizeof(*percentage_list)*(2*max_cpu_number+1)); /* We need space for max_cpu_number pairs N:% and -1 terminating whole list */
     if(percentage_list == NULL){
         return NULL;
     }
@@ -142,6 +142,7 @@ static double* calculate_percentage(size_t*const*const old_data, size_t*const*co
             new_cpu_counter++;
         }
     }
+    percentage_list[2*(*max_cpu+1)] = -1;
 
     return percentage_list;
 }

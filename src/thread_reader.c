@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/sysinfo.h>
+#include <threads.h>
 #include "../include/raw_data.h"
 #include "../include/threads.h"
 
@@ -99,6 +100,9 @@ void* reader(void* arg){
         raw_data_unlock(raw_data);
 
         fclose(ptr);
+
+
+        thrd_sleep(&(struct timespec){.tv_sec=1}, NULL); 
     }
 
     return NULL;

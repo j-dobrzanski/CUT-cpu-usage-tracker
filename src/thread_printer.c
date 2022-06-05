@@ -5,21 +5,26 @@
 
 void* printer(void* arg);
 
-static void print_data(double* data){
+static void print_data(double data[]){
     size_t counter = 0;
-    printf("\n");
-    while(data[counter] > 0){
-        printf("Cpu%.0f: %.2f\n", data[counter], data[counter + 1]);
+    // printf("\e[1;1H\e[2J");
+    printf("\033[H\033[J");
+    while(data[counter] >= 0){
+        if((ssize_t)data[counter] == 0){
+            printf("Cpu: %.2f%%\n", data[counter + 1]*100);
+        }
+        else{
+            printf("Cpu%.0f: %.2f%%\n", data[counter]-1, data[counter + 1]*100);
+        }
         counter += 2;
     }
     return;
 }
 
 void* printer(void* arg){
-    Ready_data* ready_data = (Ready_data*)arg;
+    Ready_data* ready_data = *(Ready_data**)arg;
 
     while(true){
-        fflush(stdout);
         /* Getting data to print */
         ready_data_lock(ready_data);
 

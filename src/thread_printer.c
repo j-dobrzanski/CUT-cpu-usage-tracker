@@ -42,6 +42,8 @@ void* printer(void* arg){
         print_data(printable_data);
         free(printable_data);
     }
+
+    return NULL;
 }
 
 

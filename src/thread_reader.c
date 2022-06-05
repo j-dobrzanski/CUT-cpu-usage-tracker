@@ -35,12 +35,13 @@ static char* read_data(FILE* ptr){
         }
         else{
             char* temp_table = malloc(sizeof(char) * SINLGE_BUFFER_SIZE * buffer_number);
-            temp_table = memcpy(temp_table, table, buffer_number*SINLGE_BUFFER_SIZE);
+            memcpy(temp_table, table, buffer_number*SINLGE_BUFFER_SIZE);
             free(table);
             buffer_number += 1;
             table = malloc(sizeof(char) * SINLGE_BUFFER_SIZE * buffer_number);
-            table = memcpy(table, temp_table, SINLGE_BUFFER_SIZE * (buffer_number - 1));
+            memcpy(table, temp_table, SINLGE_BUFFER_SIZE * (buffer_number - 1));
             table[inside_buffer] = c;
+            free(temp_table);
         }
         c = (char)fgetc(ptr);
         inside_buffer += 1;
@@ -56,21 +57,16 @@ static char* read_data(FILE* ptr){
         if(temp_table == NULL){
             return NULL;
         }
-        temp_table = memcpy(temp_table, table, buffer_number*SINLGE_BUFFER_SIZE);
-        if(temp_table == NULL){
-            return NULL;
-        }
+        memcpy(temp_table, table, buffer_number*SINLGE_BUFFER_SIZE);
         free(table);
         buffer_number += 1;
         table = malloc(sizeof(char) * SINLGE_BUFFER_SIZE * buffer_number);
         if(table == NULL){
             return NULL;
         }
-        table = memcpy(table, temp_table, SINLGE_BUFFER_SIZE * (buffer_number - 1));
-        if(table == NULL){
-            return NULL;
-        }
+        memcpy(table, temp_table, SINLGE_BUFFER_SIZE * (buffer_number - 1));
         table[inside_buffer] = '\0';
+        free(temp_table);
     }
     return table;
 }

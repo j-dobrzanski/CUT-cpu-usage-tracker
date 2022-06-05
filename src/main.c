@@ -1,4 +1,5 @@
 #include <pthread.h>
+#include <string.h>
 #include "../include/threads.h"
 #include "../include/data_manager.h"
 #include "../include/raw_data.h"
@@ -6,6 +7,11 @@
 
 
 int main(void){
+    struct sigaction action;
+    memset(&action, 0, sizeof(struct sigaction));
+    action.sa_handler = term; /* There is recursive macro disbled by clang */
+    sigaction(SIGTERM, &action, NULL);
+
     Raw_data* raw_data = raw_data_create();
     Ready_data* ready_data = ready_data_create();
 

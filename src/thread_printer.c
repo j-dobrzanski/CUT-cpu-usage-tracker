@@ -7,7 +7,6 @@ void* printer(void* arg);
 
 static void print_data(double data[]){
     size_t counter = 0;
-    // printf("\e[1;1H\e[2J");
     printf("\033[H\033[J");
     while(data[counter] >= 0){
         if((ssize_t)data[counter] == 0){
@@ -23,8 +22,8 @@ static void print_data(double data[]){
 
 void* printer(void* arg){
     Ready_data* ready_data = *(Ready_data**)arg;
-
-    while(true){
+    int printer_handler = 0;
+    while(printer_handler == 0){
         /* Getting data to print */
         ready_data_lock(ready_data);
 
@@ -33,6 +32,9 @@ void* printer(void* arg){
         }
 
         double* printable_data = ready_data_get(ready_data);
+        if(printable_data == NULL){
+            break;
+        }
 
         ready_data_call_producer(ready_data);
 
@@ -41,6 +43,10 @@ void* printer(void* arg){
         /* Printing data */
         print_data(printable_data);
         free(printable_data);
+
+        sig_lock();
+        printer_handler = signal_handler;
+        sig_unlock();
     }
 
     return NULL;

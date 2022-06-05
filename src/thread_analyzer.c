@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <inttypes.h>
@@ -206,16 +207,19 @@ void* analyzer(void* arg){
     raw_data_unlock(raw_data);
 
     size_t** new_data = parse_and_analyze_data(data, &new_cpu_number);
+    old_cpu_number = new_cpu_number;
     size_t** old_data = get_empty_data(new_cpu_number, new_data);
     
     free(data);
+    int analyzer_handler = 0;
+    double* percentage_list = NULL;
 
     /* Main part of thread */
-    while(true){
+    while(analyzer_handler == 0){
 
         /* Calculating percentages */
         size_t number_of_cpus = 0;
-        double* percentage_list = calculate_percentage(old_data, new_data, old_cpu_number, new_cpu_number, &number_of_cpus);
+        percentage_list = calculate_percentage(old_data, new_data, old_cpu_number, new_cpu_number, &number_of_cpus);
         
         /* Adding results to ready_data structure */
         ready_data_lock(ready_data);
@@ -229,7 +233,7 @@ void* analyzer(void* arg){
         ready_data_call_consumer(ready_data);
 
         ready_data_unlock(ready_data);
-        
+
         /* Getting new data */
         raw_data_lock(raw_data);
 
@@ -238,6 +242,9 @@ void* analyzer(void* arg){
         }
 
         data = raw_data_get(raw_data);
+        if(data == NULL){
+            break;
+        }
 
         raw_data_call_producer(raw_data);
 
@@ -251,7 +258,17 @@ void* analyzer(void* arg){
         free(data);
         free(percentage_list);
 
+        sig_lock();
+        analyzer_handler = signal_handler;
+        sig_unlock();
     }
 
+    free(percentage_list);
+    free_data(old_data, old_cpu_number);
+    free_data(new_data, new_cpu_number);
+
+    ready_data_lock(ready_data);
+    ready_data_call_consumer(ready_data);
+    ready_data_unlock(ready_data);
     return NULL;
 }

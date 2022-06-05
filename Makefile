@@ -1,5 +1,5 @@
 main_file = src/main.c
-src_files = src/raw_data.c src/thread_reader.c src/ready_data.c src/thread_analyzer.c src/thread_printer.c
+src_files = src/signal_handler.c src/raw_data.c src/thread_reader.c src/ready_data.c src/thread_analyzer.c src/thread_printer.c
 test_outs = $(notdir $(test_files:%=bin/%.o))
 
 

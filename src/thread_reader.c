@@ -74,7 +74,8 @@ static char* read_data(FILE* ptr){
 /* Reads data from /proc/stat and than adds that into the buffer */
 void* reader(void* arg){
     Raw_data* const raw_data = *(Raw_data**)arg;
-    while(true){
+    int reader_handler = 0;
+    while(reader_handler == 0){
         FILE* const ptr = fopen("/proc/stat", "r");
         if(ptr == NULL){
             return NULL;
@@ -94,14 +95,20 @@ void* reader(void* arg){
         raw_data_call_consumer(raw_data);
 
         raw_data_unlock(raw_data);
-
+        free(data);
         fclose(ptr);
 
         /* No point in reading the file too often - it will always give 0 
             Aonther option is sleep() from unistd.h, but it isn't C standard nor included in pthread.h
         */
         thrd_sleep(&(struct timespec){.tv_sec=1}, NULL); 
-    }
 
+        sig_lock();
+        reader_handler = signal_handler;
+        sig_unlock();
+    }
+    raw_data_lock(raw_data);
+    raw_data_call_consumer(raw_data);
+    raw_data_unlock(raw_data);
     return NULL;
 }

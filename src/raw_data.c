@@ -78,8 +78,8 @@ Raw_data* raw_data_create(void){
 /* Destructor of data manager - frees all frames in buffer and destroys thread-connected variables before freeing data manager */
 void raw_data_destroy(Raw_data* raw_data){
 
-    Raw_data_element* head = raw_data->head;
-    Raw_data_element* current = raw_data->head;
+    Raw_data_element* head = raw_data->tail;
+    Raw_data_element* current = raw_data->tail;
 
     while(current != NULL){
         head = current->next_element;

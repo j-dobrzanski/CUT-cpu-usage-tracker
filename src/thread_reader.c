@@ -101,7 +101,9 @@ void* reader(void* arg){
 
         fclose(ptr);
 
-
+        /* No point in reading the file too often - it will always give 0 
+            Aonther option is sleep() from unistd.h, but it isn't C standard nor included in pthread.h
+        */
         thrd_sleep(&(struct timespec){.tv_sec=1}, NULL); 
     }
 

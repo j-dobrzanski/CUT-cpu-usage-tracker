@@ -2,12 +2,12 @@
 #include <pthread.h>
 #include "../include/threads.h"
 
-volatile sig_atomic_t signal_handler = 0;
+volatile sig_atomic_t signal_handler;
 pthread_mutex_t lock;
 
 void term(int signum);
-void sig_lock();
-void sig_unlock();
+void sig_lock(void);
+void sig_unlock(void);
 
 /* We want all of the threads to have access to signal_handler, but we don't want them to interfere with it being assigned value by term function */
 void term(int signum){

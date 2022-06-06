@@ -17,7 +17,7 @@ static void ready_data_test_add_single(){
     
     {
         Ready_data* ready_data = ready_data_create();
-        float payload[] = {1.0, 10.5, 11.5};
+        double payload[] = {1.0, 10.5, 11.5};
         size_t elem_number = 3;
         ready_data_add(ready_data, payload, elem_number);
 
@@ -29,7 +29,7 @@ static void ready_data_test_add_single(){
 
     {
         Ready_data* ready_data = ready_data_create();
-        float* payload = NULL;
+        double* payload = NULL;
         ready_data_add(ready_data, payload, 0);
 
         assert(ready_data_empty(ready_data) == true);
@@ -43,7 +43,7 @@ static void ready_data_test_add_single(){
 static void ready_data_test_fill(){
     Ready_data* ready_data = ready_data_create();
 
-    float payload[] = {1.0, 10.5, 11.5};
+    double payload[] = {1.0, 10.5, 11.5};
     size_t elem_number = 3;
 
     while(ready_data_full(ready_data) == false){
@@ -58,7 +58,7 @@ static void ready_data_test_fill(){
 static void ready_data_test_fill_and_empty(){
     Ready_data* ready_data = ready_data_create();
 
-    float payload[] = {1.0, 10.5, 11.5};
+    double payload[] = {1.0, 10.5, 11.5};
     size_t data_size = 3;
 
     while(ready_data_full(ready_data) == false){
@@ -68,7 +68,7 @@ static void ready_data_test_fill_and_empty(){
     assert(ready_data_full(ready_data) == true);
 
     while(ready_data_empty(ready_data) == false){
-        float* got_payload = ready_data_get(ready_data);
+        double* got_payload = ready_data_get(ready_data);
         assert(memcmp(payload, got_payload, data_size) == 0);
         free(got_payload);
     }

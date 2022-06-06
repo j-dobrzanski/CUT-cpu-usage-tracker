@@ -49,8 +49,8 @@ static size_t* calculate_basic(const size_t list[const]){
 /* Function to parse raw data into tokens and saving them into table of numbers - one row for each line, lines are counted into cpu_number.
     While parsing it we are taking adventage of each line structure defined in documentation.
 */
-static size_t** parse_and_analyze_data(char* data, size_t* const cpu_number){
-    char* delimeter = " \n"; /* tokens in /proc/stat are separated by ' ' or '\n' */
+static size_t** data_parse_and_analyze(char* data, size_t* const cpu_number){
+    char*const delimeter = " \n"; /* tokens in /proc/stat are separated by ' ' or '\n' */
     char* token = strtok(data, delimeter);
     *cpu_number = 0;
 
@@ -67,14 +67,13 @@ static size_t** parse_and_analyze_data(char* data, size_t* const cpu_number){
         /* variables in order as in line: (cpu)N, user, nice, system, idle, iowait, irq, softirq, steal, guest, guestnice */
         size_t fields[FIELDS_NUMBER] = {0};
 
-        char* endptr; /* pointer to pass to strtoumax() */
 
         /* strtoumax() gives 0 when there is no conversion, so we want to differentiate cpu from cpu0 by adding 1 to every number from cpuN */
         if(strcmp(token, "cpu") == 0){
             fields[0] = 0;
         }
         else{
-            fields[0] = strtoumax(&token[3], &endptr, 10) + 1; /* &token[3] beacuse number starts only after 3 chars o 'cpu' */
+            fields[0] = strtoumax(&token[3], NULL, 10) + 1; /* &token[3] beacuse number starts only after 3 chars o 'cpu' */
         }
         if(errno != 0){
             return NULL;
@@ -87,7 +86,7 @@ static size_t** parse_and_analyze_data(char* data, size_t* const cpu_number){
                 return NULL;
             }
             
-            fields[i] = strtoumax(temp_tok, &endptr, 10);
+            fields[i] = strtoumax(temp_tok, NULL, 10);
             if(errno != 0){
                 return NULL;
             }
@@ -117,8 +116,7 @@ static size_t** parse_and_analyze_data(char* data, size_t* const cpu_number){
 }
 
 /* Function to calculate current cpu usage based on current and last /proc/stat snapshot */
-static double* calculate_percentage(size_t*const*const old_data, size_t*const*const new_data, const size_t old_cpu_number, const size_t new_cpu_number, size_t* max_cpu){
-    double* percentage_list = NULL; /* Variable to keep pointer to memory with our results */
+static double* calculate_percentage(size_t*const*const old_data, size_t*const*const new_data, const size_t old_cpu_number, const size_t new_cpu_number, size_t*const max_cpu){
     size_t max_cpu_number = 0; /* Cpu number can change during program runtime, so we want to know max to stay in data bounds */
     if(old_cpu_number < new_cpu_number){
         max_cpu_number = old_cpu_number;
@@ -126,7 +124,7 @@ static double* calculate_percentage(size_t*const*const old_data, size_t*const*co
     else{
         max_cpu_number = new_cpu_number;
     }
-    percentage_list = malloc(sizeof(*percentage_list)*(2*max_cpu_number+1)); /* for every line we keep cpuN and percentage and -1 terminating data */
+    double*const percentage_list = malloc(sizeof(*percentage_list)*(2*max_cpu_number+1)); /* for every line we keep cpuN and percentage and -1 terminating data */
     if(percentage_list == NULL){
         return NULL;
     }
@@ -167,7 +165,7 @@ static double* calculate_percentage(size_t*const*const old_data, size_t*const*co
 }
 
 /* After first data snapshot we don't have last data, so we want to simulate it to match new data */
-static size_t** get_empty_data(size_t cpu_number, size_t* new_data[]){
+static size_t** data_get_empty(const size_t cpu_number, size_t*const new_data[]){
     size_t** data = malloc(sizeof(*data) * cpu_number);
     if(data == NULL){
         return NULL;
@@ -185,7 +183,7 @@ static size_t** get_empty_data(size_t cpu_number, size_t* new_data[]){
 }
 
 /* Function to free data - easier to manage in code */
-static void free_data(size_t** data, size_t data_length){
+static void data_free(size_t** data, const size_t data_length){
     for(size_t i = 0; i < data_length; i++){
         free(data[i]);
     }
@@ -197,9 +195,9 @@ void* analyzer(void* arg){
     if(FIELDS_NUMBER < 9){
         return NULL;
     }
-    Data_manager* manager = (Data_manager*)arg; /* We need to pass 2 pointers to this function, but pthread needs it to take only one parameter void*, so we pass pointer to structure keeping these two pointers */
-    Raw_data* raw_data = manager->raw_data;
-    Ready_data* ready_data = manager->ready_data;
+    Data_manager* const manager = (Data_manager*)arg; /* We need to pass 2 pointers to this function, but pthread needs it to take only one parameter void*, so we pass pointer to structure keeping these two pointers */
+    Raw_data* const raw_data = manager->raw_data;
+    Ready_data* const ready_data = manager->ready_data;
 
     size_t new_cpu_number = 0;
     size_t old_cpu_number = 0;
@@ -218,9 +216,9 @@ void* analyzer(void* arg){
 
     raw_data_unlock(raw_data);
 
-    size_t** new_data = parse_and_analyze_data(data, &new_cpu_number);
+    size_t** new_data = data_parse_and_analyze(data, &new_cpu_number);
     old_cpu_number = new_cpu_number;
-    size_t** old_data = get_empty_data(new_cpu_number, new_data);
+    size_t** old_data = data_get_empty(new_cpu_number, new_data);
     
     free(data);
     int analyzer_handler = 0; /* Variable to keep track of signal handler */
@@ -263,10 +261,10 @@ void* analyzer(void* arg){
         raw_data_unlock(raw_data);
 
         /* Analyzing new data */
-        free_data(old_data, old_cpu_number);
+        data_free(old_data, old_cpu_number);
         old_data = new_data;
         old_cpu_number = new_cpu_number;
-        new_data = parse_and_analyze_data(data, &new_cpu_number);
+        new_data = data_parse_and_analyze(data, &new_cpu_number);
         free(data);
         free(percentage_list);
 
@@ -280,8 +278,8 @@ void* analyzer(void* arg){
         moreover loop may end before full one-time-execution, so we need to consider this too
      */
     free(percentage_list);
-    free_data(old_data, old_cpu_number);
-    free_data(new_data, new_cpu_number);
+    data_free(old_data, old_cpu_number);
+    data_free(new_data, new_cpu_number);
 
     /* Same problem as in thread_reader.c - it doesn't call consumer again before getting out of loop, and by that time printer() already waits for new data. */
     ready_data_lock(ready_data);

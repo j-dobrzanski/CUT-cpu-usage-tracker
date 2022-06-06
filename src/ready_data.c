@@ -19,10 +19,10 @@ typedef struct Ready_data_element{
 struct Ready_data_manager{
     size_t max_size;
     size_t current_size;
-    pthread_mutex_t mutex;
+    Ready_data_element* table[MAX_BUFFER_SIZE];
+    pthread_mutex_t mutex; /* sizeof(pthread_mutex_t) = 40 and sizeof(pthread_mutex_t) = 48 on 64-bit architecture so because both 48 + 40 > 64 and 40 + 40 > 64 the order doesn't really matter */
     pthread_cond_t can_produce;
     pthread_cond_t can_consume;
-    Ready_data_element* table[MAX_BUFFER_SIZE];
 };
 
 Ready_data* ready_data_create(void);

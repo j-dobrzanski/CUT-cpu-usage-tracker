@@ -5,7 +5,7 @@
 
 void* printer(void* arg);
 
-static void print_data(double data[]){
+static void print_data(const double data[const]){
     size_t counter = 0;
 
     printf("\033[H\033[J"); /* Some *magic* code to get to highest line and clear all lines below - it clears terminal - I assume all linux terminals use ANSI esacpe characters*/
@@ -24,7 +24,7 @@ static void print_data(double data[]){
 }
 
 void* printer(void* arg){
-    Ready_data* ready_data = *(Ready_data**)arg;
+    Ready_data*const ready_data = *(Ready_data**)arg;
     int printer_handler = 0; /* Variable to keep track of signal handler */
     while(printer_handler == 0){
         /* Getting data to print */
@@ -34,7 +34,7 @@ void* printer(void* arg){
             ready_data_wait_for_producer(ready_data);
         }
 
-        double* printable_data = ready_data_get(ready_data);
+        double*const printable_data = ready_data_get(ready_data);
         if(printable_data == NULL){
             break;
         }

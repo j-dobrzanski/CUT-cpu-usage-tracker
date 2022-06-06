@@ -9,6 +9,8 @@
 
 
 #define SINLGE_BUFFER_SIZE 16
+#define SLEEP_SEC_VALUE 1
+#define SLEEP_NSEC_VALUE 0
 
 void* reader(void* arg);
 
@@ -17,7 +19,7 @@ void* reader(void* arg);
     Problem with unknown data length is dealt with by making new bigger table of chars containing additional SINGLE_BUFFER_SIZE memory.
     Old list is copied indirectly to the new, bigger list of the same name, and reading the file is continued.     
 */
-static char* read_data(FILE* ptr){
+static char* read_data(FILE* const ptr){
     /* New table to keepp /proc/stat data of basic size */
     char* table = malloc(sizeof(char) * SINLGE_BUFFER_SIZE);
     if(table == NULL){
@@ -56,7 +58,7 @@ static char* read_data(FILE* ptr){
         }
         /* Getting next char */
         c = (char)fgetc(ptr);
-        inside_buffer += 1;
+        inside_buffer++;
         if(c == EOF){
             return NULL;
         }
@@ -72,7 +74,7 @@ static char* read_data(FILE* ptr){
         }
         memcpy(temp_table, table, buffer_number*SINLGE_BUFFER_SIZE);
         free(table);
-        buffer_number += 1;
+        buffer_number++;
         table = malloc(sizeof(char) * SINLGE_BUFFER_SIZE * buffer_number);
         if(table == NULL){
             return NULL;
@@ -95,6 +97,9 @@ void* reader(void* arg){
         }
 
         char* data = read_data(ptr);
+        if(data == NULL){
+            return NULL;
+        }
 
         /* locking raw_data as we will manipulate now on that */
         raw_data_lock(raw_data);
@@ -114,7 +119,7 @@ void* reader(void* arg){
         /* No point in reading the file too often - it will always give 0 
             Aonther option is sleep() from unistd.h, but it isn't C standard nor included in pthread.h
         */
-        thrd_sleep(&(struct timespec){.tv_sec=1}, NULL); 
+        thrd_sleep(&(struct timespec){.tv_sec=SLEEP_SEC_VALUE, .tv_nsec=SLEEP_NSEC_VALUE}, NULL); 
 
         /* Checking if signal was caught */
         sig_lock();

@@ -37,7 +37,7 @@ struct Raw_data_manager{
     size_t current_size;
     Raw_data_element* head;
     Raw_data_element* tail;
-    pthread_mutex_t mutex;
+    pthread_mutex_t mutex; /* sizeof(pthread_mutex_t) = 40 and sizeof(pthread_mutex_t) = 48 on 64-bit architecture so because both 48 + 40 > 64 and 40 + 40 > 64 the order doesn't really matter */
     pthread_cond_t can_produce;
     pthread_cond_t can_consume;
 };

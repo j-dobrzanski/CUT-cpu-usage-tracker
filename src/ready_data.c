@@ -93,6 +93,7 @@ void ready_data_add(Ready_data* ready_data, double data[], size_t elem_number){
         return;
     }
 
+    /* Even though we skeep a pointer to data we don't want to rely on someone's elses memory space or the way that persons gives us data[] */
     Ready_data_element* new_element = malloc(sizeof(*new_element) + sizeof(*data) * elem_number);
     if(new_element == NULL){
         return;
@@ -105,6 +106,7 @@ void ready_data_add(Ready_data* ready_data, double data[], size_t elem_number){
     ready_data->current_size++;
 }
 
+/* Gets single list of N, % for every cpu visible */
 double* ready_data_get(Ready_data* ready_data){
     if(ready_data_empty(ready_data)){
         return NULL;

@@ -7,9 +7,12 @@ void* printer(void* arg);
 
 static void print_data(double data[]){
     size_t counter = 0;
-    printf("\033[H\033[J");
-    while(data[counter] >= 0){
-        if((ssize_t)data[counter] == 0){
+
+    printf("\033[H\033[J"); /* Some *magic* code to get to highest line and clear all lines below - it clears terminal - I assume all linux terminals use ANSI esacpe characters*/
+    
+    while(data[counter] >= 0){ /* Checks for terminating -1 */
+        
+        if((ssize_t)data[counter] == 0){ /* in this line we get a small, positive, integer number, as it is N from cpuN */
             printf("Cpu: %.2f%%\n", data[counter + 1]*100);
         }
         else{
@@ -22,7 +25,7 @@ static void print_data(double data[]){
 
 void* printer(void* arg){
     Ready_data* ready_data = *(Ready_data**)arg;
-    int printer_handler = 0;
+    int printer_handler = 0; /* Variable to keep track of signal handler */
     while(printer_handler == 0){
         /* Getting data to print */
         ready_data_lock(ready_data);
@@ -44,6 +47,7 @@ void* printer(void* arg){
         print_data(printable_data);
         free(printable_data);
 
+        /* Checking if signal was caught */
         sig_lock();
         printer_handler = signal_handler;
         sig_unlock();

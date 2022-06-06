@@ -18,21 +18,32 @@ void* reader(void* arg);
     Old list is copied indirectly to the new, bigger list of the same name, and reading the file is continued.     
 */
 static char* read_data(FILE* ptr){
+    /* New table to keepp /proc/stat data of basic size */
     char* table = malloc(sizeof(char) * SINLGE_BUFFER_SIZE);
     if(table == NULL){
         return NULL;
     }
+
+    /* Getting first char of data to heve it initialized for while loop */
     char c = 0;
     c = (char)fgetc(ptr);
     if(c == EOF){
         return NULL;
     }
-    size_t buffer_number = 1;
-    size_t inside_buffer = 0;
+
+    /* Variables to keep track of: */
+    size_t buffer_number = 1; /* Current size of buffer expressed in SINGLE_BUFFER_SIZE */
+    size_t inside_buffer = 0; /* Index of current char to write in buffer */
+
     while(c != 'i'){
+        /* If index is inside buffer size, than just save it */
         if(inside_buffer < buffer_number * SINLGE_BUFFER_SIZE){
             table[inside_buffer] = c;
         }
+        /* Otherwise we need to dynamically increase allocated buffer memory; 
+            new temp_table of size table, copy table into temp_table, free table, 
+            allocate more memory to table and increase buffer_number, copy temp_table into table, save current char, free temp_table.  
+        */
         else{
             char* temp_table = malloc(sizeof(char) * SINLGE_BUFFER_SIZE * buffer_number);
             memcpy(temp_table, table, buffer_number*SINLGE_BUFFER_SIZE);
@@ -43,12 +54,14 @@ static char* read_data(FILE* ptr){
             table[inside_buffer] = c;
             free(temp_table);
         }
+        /* Getting next char */
         c = (char)fgetc(ptr);
         inside_buffer += 1;
         if(c == EOF){
             return NULL;
         }
     }
+    /* We want to indicate end of data, so let's make it string and terminate it with '\0'; same procedure as a few lines higher */
     if(inside_buffer < buffer_number * SINLGE_BUFFER_SIZE){
         table[inside_buffer] = '\0';
     }
@@ -73,8 +86,8 @@ static char* read_data(FILE* ptr){
 
 /* Reads data from /proc/stat and than adds that into the buffer */
 void* reader(void* arg){
-    Raw_data* const raw_data = *(Raw_data**)arg;
-    int reader_handler = 0;
+    Raw_data* const raw_data = *(Raw_data**)arg; /* Casting arg onto our data struct pointer */
+    int reader_handler = 0; /* Variable to keep track of signal handler */
     while(reader_handler == 0){
         FILE* const ptr = fopen("/proc/stat", "r");
         if(ptr == NULL){
@@ -103,10 +116,17 @@ void* reader(void* arg){
         */
         thrd_sleep(&(struct timespec){.tv_sec=1}, NULL); 
 
+        /* Checking if signal was caught */
         sig_lock();
         reader_handler = signal_handler;
         sig_unlock();
     }
+    /* Without calling consumer after it may freeze while catching SIGTERM. Reason:
+        if cpu isn't used much program runs fast and most of it's time running is waiting because of thrd_sleep( )
+        (however there is no point in running it then without sleep, as differences are too small to give reasonable data),
+        then the highest probability of catching SIGTERM is while thrd_sleep() and while analyzer() waits for new element in raw_data,
+        it means that analyzer() is left hanging in that state.
+     */
     raw_data_lock(raw_data);
     raw_data_call_consumer(raw_data);
     raw_data_unlock(raw_data);

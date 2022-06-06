@@ -7,11 +7,14 @@
 
 
 int main(void){
+
+    /* Part resposible for signal handling */
     struct sigaction action;
     memset(&action, 0, sizeof(struct sigaction));
-    action.sa_handler = term; /* There is recursive macro disbled by clang */
+    action.sa_handler = term; /* There is recursive macro disabled by clang */
     sigaction(SIGTERM, &action, NULL);
 
+    /* Main part that creates data structures and manages threads */
     Raw_data* raw_data = raw_data_create();
     Ready_data* ready_data = ready_data_create();
 

@@ -5,6 +5,11 @@
 volatile sig_atomic_t signal_handler = 0;
 pthread_mutex_t lock;
 
+void term(int signum);
+void sig_lock();
+void sig_unlock();
+
+/* We want all of the threads to have access to signal_handler, but we don't want them to interfere with it being assigned value by term function */
 void term(int signum){
     pthread_mutex_lock(&lock);
     signal_handler = signum; /* As it is used to catch SIGTERM it will get that value */
